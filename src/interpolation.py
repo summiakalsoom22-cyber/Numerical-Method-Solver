@@ -69,7 +69,7 @@ def newton_interpolation(x_values, y_values, x):
             table[i][0] * product
         )
 
-    return result, table
+    return result
 
 
 def forward_difference_table(y_values):
@@ -115,7 +115,7 @@ def newton_forward(x_values, y_values, x):
             / math.factorial(order)
         )
 
-    return result, table
+    return result
 
 
 def backward_difference_table(y_values):
@@ -161,4 +161,4 @@ def newton_backward(x_values, y_values, x):
             / math.factorial(order)
         )
 
-    return result, table
+    return result

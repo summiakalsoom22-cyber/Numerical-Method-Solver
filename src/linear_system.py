@@ -136,7 +136,7 @@ def lu_decomposition(A, b):
 
         x[i] = (y[i] - total) / U[i][i]
 
-    return L, U, x
+    return  x
 
 
 def jacobi(A, b, tolerance=1e-6, max_iterations=100):
@@ -177,9 +177,9 @@ def jacobi(A, b, tolerance=1e-6, max_iterations=100):
         x = x_new
 
         if error < tolerance:
-            return x, data
+            return x
 
-    return x, data
+    return x
 
 
 def gauss_seidel(A, b, tolerance=1e-6, max_iterations=100):
@@ -218,6 +218,6 @@ def gauss_seidel(A, b, tolerance=1e-6, max_iterations=100):
         })
 
         if error < tolerance:
-            return x, data
+            return x
 
-    return x, data
+    return x
