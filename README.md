@@ -5,6 +5,14 @@ A Python-based numerical computing toolkit implementing fundamental numerical me
 The project focuses on understanding the mathematical algorithms behind numerical methods and translating them into reusable Python implementations.
 
 It also includes automated testing, numerical experiments, error analysis, and convergence analysis.
+🚀 Interactive Web Application
+
+The Numerical Methods Solver is also available as an interactive web application built with Streamlit.
+
+Live Demo:
+https://numerical-method-solver-5sctamx89fnfmi585i79kv.streamlit.app/
+
+The application provides an interactive interface for exploring and applying the implemented numerical methods, along with method comparisons and error analysis.
 
 Implemented Methods
 
@@ -66,6 +74,8 @@ Examples include:
 Technologies
 
 - Python 3
+- Numpy
+- Streamlit
 - Pytest
 - Git
 - GitHub
