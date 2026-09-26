@@ -1,10 +1,9 @@
-def f(x):
-    return x**3 - x - 2
+def bisection(f, a, b, tolerance=1e-6, max_iterations=100):
 
-
-def bisection(a, b, tolerance=1e-6, max_iterations=100):
     if f(a) * f(b) >= 0:
-        raise ValueError("The interval must contain a sign change.")
+        raise ValueError(
+            "The interval must contain a sign change."
+        )
 
     data = []
 
@@ -33,11 +32,14 @@ def bisection(a, b, tolerance=1e-6, max_iterations=100):
     return c, data
 
 
-def df(x):
-    return 3 * x**2 - 1
+def newton_raphson(
+    f,
+    df,
+    x0,
+    tolerance=1e-6,
+    max_iterations=100
+):
 
-
-def newton_raphson(x0, tolerance=1e-6, max_iterations=100):
     data = []
     x = x0
 
@@ -47,7 +49,9 @@ def newton_raphson(x0, tolerance=1e-6, max_iterations=100):
         dfx = df(x)
 
         if dfx == 0:
-            raise ValueError("Derivative is zero.")
+            raise ValueError(
+                "Derivative is zero."
+            )
 
         x_new = x - fx / dfx
         error = abs(x_new - x)
@@ -67,7 +71,14 @@ def newton_raphson(x0, tolerance=1e-6, max_iterations=100):
     return x, data
 
 
-def secant(x0, x1, tolerance=1e-6, max_iterations=100):
+def secant(
+    f,
+    x0,
+    x1,
+    tolerance=1e-6,
+    max_iterations=100
+):
+
     data = []
 
     for iteration in range(1, max_iterations + 1):
@@ -76,9 +87,16 @@ def secant(x0, x1, tolerance=1e-6, max_iterations=100):
         fx1 = f(x1)
 
         if fx1 - fx0 == 0:
-            raise ValueError("Division by zero.")
+            raise ValueError(
+                "Division by zero."
+            )
 
-        x2 = x1 - fx1 * (x1 - x0) / (fx1 - fx0)
+        x2 = (
+            x1
+            - fx1 * (x1 - x0)
+            / (fx1 - fx0)
+        )
+
         error = abs(x2 - x1)
 
         data.append({
@@ -97,9 +115,18 @@ def secant(x0, x1, tolerance=1e-6, max_iterations=100):
     return x2, data
 
 
-def regula_falsi(a, b, tolerance=1e-6, max_iterations=100):
+def regula_falsi(
+    f,
+    a,
+    b,
+    tolerance=1e-6,
+    max_iterations=100
+):
+
     if f(a) * f(b) >= 0:
-        raise ValueError("The interval must contain a sign change.")
+        raise ValueError(
+            "The interval must contain a sign change."
+        )
 
     data = []
 
@@ -108,9 +135,15 @@ def regula_falsi(a, b, tolerance=1e-6, max_iterations=100):
         fa = f(a)
         fb = f(b)
 
-        c = (a * fb - b * fa) / (fb - fa)
+        c = (
+            a * fb - b * fa
+        ) / (fb - fa)
 
-        error = abs(c - a) if iteration > 1 else abs(b - a)
+        error = (
+            abs(c - a)
+            if iteration > 1
+            else abs(b - a)
+        )
 
         data.append({
             "iteration": iteration,

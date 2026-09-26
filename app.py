@@ -1,5 +1,6 @@
 import streamlit as st
 import math
+import pandas as pd
 
 # ============================================================
 # IMPORT YOUR EXISTING NUMERICAL METHODS
@@ -167,6 +168,12 @@ def parse_matrix(text, n):
         matrix.append(values)
 
     return matrix
+def download_csv(dataframe, filename):
+    csv= dataframe.to_csv(index=False).encode("utf-8")
+    st.download_button(label="📥 Download CSV",
+                       data=csv,
+                       file_name=filename,
+                       mime="text/csv")
 
 
 # ============================================================
@@ -191,34 +198,46 @@ method = st.sidebar.selectbox(
     "Choose a method:",
     [
         "Home",
+        #        Root Finding
 
         "Bisection Method",
         "Newton-Raphson Method",
         "Secant Method",
         "Regula Falsi",
+        #        Linear System
 
         "Gaussian Elimination",
         "Gauss-Jordan Elimination",
         "LU Decomposition",
         "Jacobi Method",
         "Gauss-Seidel Method",
+        #          Interpolation 
 
         "Lagrange Interpolation",
         "Newton Divided Difference",
         "Newton Forward Interpolation",
         "Newton Backward Interpolation",
+        #           Differentiation
 
         "Forward Difference",
         "Backward Difference",
         "Central Difference",
+        #          Differentiation Analysis
+        "Differentiation Error Analysis",
+        # Integration
 
         "Trapezoidal Rule",
         "Simpson 1/3 Rule",
         "Simpson 3/8 Rule",
+        # Integration Analysis 
+        "Integration Method Comparison",
+        # ODE
 
         "Euler Method",
         "Heun Method",
-        "Runge-Kutta 4 Method"
+        "Runge-Kutta 4 Method",
+        # ODE Analysis
+        "ODE Method Comparison"
     ]
 )
 
@@ -339,7 +358,9 @@ elif method == "Bisection Method":
         try:
             # Bisection in your module uses its own f(x),
             # so it currently works with x^3-x-2.
+            f = create_function(expression)
             root, data = bisection(
+                f,
                 a,
                 b,
                 tolerance=tolerance,
@@ -371,6 +392,8 @@ elif method == "Newton-Raphson Method":
         "The current Newton-Raphson implementation uses "
         "f(x) = x³ - x - 2 and its derivative."
     )
+    expression = st.text_input("Enter f(x):", value="x**3 - x - 2")
+    derivative_expression = st.text_input("Enter f'(x):", value = "3*x**2 - 1")
 
     x0 = st.number_input(
         "Initial guess (x₀)",
@@ -394,8 +417,12 @@ elif method == "Newton-Raphson Method":
     if st.button("Solve", type="primary"):
 
         try:
+            f = create_function(expression)
+            df = create_function(derivative_expression)
 
             root, data = newton_raphson(
+                f,
+                df,
                 x0,
                 tolerance=tolerance,
                 max_iterations=max_iterations
@@ -410,7 +437,7 @@ elif method == "Newton-Raphson Method":
                 use_container_width=True
             )
 
-        except ValueError as error:
+        except (ValueError, ZeroDivisionError, TypeError, NameError) as error:
             st.error(str(error))
 
 
@@ -426,6 +453,8 @@ elif method == "Secant Method":
         "The current Secant implementation uses "
         "f(x) = x³ - x - 2."
     )
+    expression = st.text_input("Enter f(x):", value="x**3 - x - 2")
+
 
     col1, col2 = st.columns(2)
 
@@ -458,8 +487,10 @@ elif method == "Secant Method":
     if st.button("Solve", type="primary"):
 
         try:
+            f = create_function(expression)
 
             root, data = secant(
+                f,
                 x0,
                 x1,
                 tolerance=tolerance,
@@ -475,7 +506,7 @@ elif method == "Secant Method":
                 use_container_width=True
             )
 
-        except ValueError as error:
+        except ( ValueError, ZeroDivisionError, TypeError, NameError) as error:
             st.error(str(error))
 
 
@@ -491,6 +522,7 @@ elif method == "Regula Falsi":
         "The current Regula Falsi implementation uses "
         "f(x) = x³ - x - 2."
     )
+    expression = st.text_input("Enter f(x):", value = "x**3 - x - 2")
 
     col1, col2 = st.columns(2)
 
@@ -523,8 +555,10 @@ elif method == "Regula Falsi":
     if st.button("Solve", type="primary"):
 
         try:
+            f = create_function(expression)
 
             root, data = regula_falsi(
+                f,
                 a,
                 b,
                 tolerance=tolerance,
@@ -540,7 +574,7 @@ elif method == "Regula Falsi":
                 use_container_width=True
             )
 
-        except ValueError as error:
+        except (ValueError, ZeroDivisionError, TypeError, NameError) as error:
             st.error(str(error))
 
 
@@ -565,6 +599,8 @@ elif method in [
         value=3,
         step=1
     )
+    n = int(n)
+    st.subheader("Coefficient Matrix A")
 
     st.write(
         "Enter the coefficient matrix A. "
@@ -586,6 +622,7 @@ elif method in [
         value=default_matrix,
         height=150
     )
+    st.subheader("Right-hand Side Vector b")
 
     default_b = ",".join(["0"] * n)
 
@@ -593,8 +630,9 @@ elif method in [
         "Vector b",
         value=default_b
     )
+    if method in ["Jacobi Method", "Gauss-Seidel Method"]:
 
-    tolerance = st.number_input(
+       tolerance = st.number_input(
         "Tolerance",
         value=0.000001,
         format="%.8f"
@@ -614,14 +652,14 @@ elif method in [
 
             A = parse_matrix(
                 matrix_text,
-                int(n)
+                n
             )
 
             b = parse_values(b_text)
 
             if len(b) != int(n):
                 raise ValueError(
-                    f"Vector b must contain {int(n)} values."
+                    f"Vector b must contain {n} values."
                 )
 
             # Fresh copies because some methods modify matrices.
@@ -678,7 +716,7 @@ elif method in [
                     f"{value:.10f}"
                 )
 
-        except (ValueError, ZeroDivisionError) as error:
+        except (ValueError, ZeroDivisionError, IndexError) as error:
 
             st.error(str(error))
 
@@ -689,7 +727,8 @@ elif method in [
 
 elif method == "Lagrange Interpolation":
 
-    st.header("Lagrange Interpolation")
+    st.header(method)
+    st.write("Enter corresponding x and y values separated by commas.")
 
     x_text = st.text_input(
         "x values",
@@ -712,13 +751,19 @@ elif method == "Lagrange Interpolation":
 
             x_values = parse_values(x_text)
             y_values = parse_values(y_text)
-
+#                   Basic Validation                     
             if len(x_values) != len(y_values):
                 raise ValueError(
                     "x and y must contain the same number of values."
                 )
+            if len(x_values) < 2:
+                raise ValueError("At least two data points are required.")
+            if len(set(x_values)) != len(x_values):
+                        raise ValueError("x values must be unique.")
+            #           Lagrange          
+            if method=="Lagrange Interpolation":
 
-            result = lagrange_interpolation(
+                result = lagrange_interpolation(
                 x_values,
                 y_values,
                 x
@@ -820,6 +865,13 @@ elif method == "Newton Forward Interpolation":
                 raise ValueError(
                     "At least two data points are required."
                 )
+            h = x_values[1] - x_values[0]
+            for i in range(1, len(x_values) - 1):
+                current_h = ( x_values[i + 1]  -
+                             x_values[i]    )
+            if abs(current_h - h) > 1e-10:
+                raise ValueError("Newton interpolation requires equally spaced x values.")
+            
 
             result = newton_forward(
                 x_values,
@@ -874,18 +926,24 @@ elif method == "Newton Backward Interpolation":
                 raise ValueError(
                     "At least two data points are required."
                 )
+            h = x_values[1] - x_values[0]
+            for i in range(1, len(x_values) - 1):
+                current_h = (x_values[i + 1]   -  x_values[i])
+                if abs(current_h  - h)  > 1e-10:
+                    raise ValueError("Newton interpolation requires equally spaced x values.")
 
             result = newton_backward(
                 x_values,
                 y_values,
                 x
             )
+            #        Display reslt   
 
             st.success(
                 f"Interpolated value: {result:.10f}"
             )
 
-        except (ValueError, ZeroDivisionError) as error:
+        except (ValueError, ZeroDivisionError, IndexError) as error:
             st.error(str(error))
 
 
@@ -920,8 +978,12 @@ elif method in [
         h = st.number_input(
             "Step size (h)",
             value=0.01,
+            min_value=0.00000001,
             format="%.8f"
         )
+    st.subheader("Optional: exact Derivative")
+    exact_derivative_expression = st.text_input("Enter exact derivative  value (optional)", value="")
+
 
     if st.button("Differentiate", type="primary"):
 
@@ -956,11 +1018,137 @@ elif method in [
             st.success(
                 f"Approximate derivative: {result:.10f}"
             )
+            if exact_derivative_expression.strip():
+                exact_value=float(exact_derivative_expression)
+                absolute_error=abs(exact_value - result)
+            st.subheader("Accuracy Analysis")
+            col1, col2= st.columns(2)
+            with col1:
+                        st.metric("Exact Derivative", f"{exact_value:.10f}")
+            with col2:
+                        st.metric("Absolute Error", f"{absolute_error:.10e}")
 
-        except Exception as error:
+        except (ValueError, ZeroDivisionError, TypeError, NameError) as error:
             st.error(
-                f"Error: {error}{error}"
+                f"Error: {error}"
             )
+# ============================================================
+# DIFFERENTIATION ERROR ANALYSIS
+# ============================================================
+
+elif method == "Differentiation Error Analysis":
+
+    st.header("Differentiation Error Analysis")
+
+    st.write(
+        "Study how the step size affects the accuracy "
+        "of numerical differentiation."
+    )
+
+    expression = st.text_input(
+        "Enter f(x):",
+        value="x**3"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        x = st.number_input(
+            "x",
+            value=2.0,
+            key="error_x"
+        )
+
+    with col2:
+        exact_derivative = st.number_input(
+            "Exact derivative",
+            value=12.0,
+            key="exact_derivative"
+        )
+
+    if st.button(
+        "Run Error Experiment",
+        type="primary"
+    ):
+
+        try:
+
+            f = create_function(expression)
+
+            step_sizes = [
+                0.1,
+                0.05,
+                0.01,
+                0.005,
+                0.001,
+                0.0005,
+                0.0001
+            ]
+
+            rows = []
+
+            for step in step_sizes:
+
+                forward = forward_difference(
+                    f, x, step
+                )
+
+                backward = backward_difference(
+                    f, x, step
+                )
+
+                central = central_difference(
+                    f, x, step
+                )
+
+                rows.append({
+                    "Step Size (h)": step,
+                    "Forward Error": abs(
+                        exact_derivative - forward
+                    ),
+                    "Backward Error": abs(
+                        exact_derivative - backward
+                    ),
+                    "Central Error": abs(
+                        exact_derivative - central
+                    )
+                })
+
+            error_data = pd.DataFrame(rows)
+
+            st.success(
+                "Error experiment completed successfully."
+            )
+
+            st.subheader("Error Table")
+
+            st.dataframe(
+                error_data,
+                use_container_width=True
+            )
+            st.download_button(
+    label="📥 Download Error Analysis CSV",
+    data=error_data.to_csv(index=False).encode("utf-8"),
+    file_name="differentiation_error_analysis.csv",
+    mime="text/csv"
+)
+
+            st.subheader("Error vs Step Size")
+
+            st.line_chart(
+                error_data.set_index(
+                    "Step Size (h)"
+                )
+            )
+
+        except (
+            ValueError,
+            ZeroDivisionError,
+            TypeError,
+            NameError
+        ) as error:
+
+            st.error(f"Error: {error}")
 
 
 # ============================================================
@@ -992,7 +1180,7 @@ elif method in [
 
         b = st.number_input(
             "Upper limit (b)",
-            value=2.0
+            value=1.0
         )
 
     n = st.number_input(
@@ -1002,6 +1190,10 @@ elif method in [
         value=10,
         step=1
     )
+    n = int(n)
+    st.subheader("Optional: Exact Integral")
+    exact_expression = st.text_input("Enter exact integral value (optionAL)", value="")
+
 
     if method == "Simpson 1/3 Rule":
 
@@ -1009,7 +1201,7 @@ elif method in [
             "For Simpson 1/3 Rule, n must be even."
         )
 
-    if method == "Simpson 3/8 Rule":
+    elif method == "Simpson 3/8 Rule":
         st.info(
             "For Simpson 3/8 Rule, n must be divisible by 3."
         )
@@ -1019,22 +1211,31 @@ elif method in [
         try:
 
             f = create_function(expression)
+            if a == b:
+                raise ValueError("Lower and upper limits must be different.")
+            if method == "Simpson 1/3 Rule":
+                if n % 2 !=0:
+                    raise ValueError("For Simpsn 1/3 Rule , n must be even.")
+            elif method == "Simpson 3/8 Rule":
+                if n % 3 != 0:
+                    raise ValueError("For Simpson 3/8 Rule , n must be divisible by 3.")
 
             if method == "Trapezoidal Rule":
 
                 result = trapezoidal(
                     f,
                     a,
-                    b,
-                    int(n)
+                    b, 
+                    n
                 )
 
             elif method == "Simpson 1/3 Rule":
+                
                 result = simpson_one_third(
                     f,
                     a,
                     b,
-                    int(n)
+                    n
                 )
 
             else:
@@ -1043,17 +1244,167 @@ elif method in [
                     f,
                     a,
                     b,
-                    int(n)
+                    n
                 )
 
             st.success(
                 f"Approximate integral: {result:.10f}"
             )
-
-        except Exception as error:
+            if exact_expression.strip():
+                exact_value = float( exact_expression)
+                absolute_error = abs(exact_value - result)
+            st.subheader("Accuracy Analysis")
+            col1, col2 = st.columns(2)
+            with col1: 
+                        st.metric("Exact Value", f"{exact_value:.10f}")
+            with col2:
+                        st.metric("Absolute Error", f"{absolute_error:.10e}")
+        
+        except (ValueError, ZeroDivisionError, TypeError,NameError) as error:
             st.error(
                 f"Error: {error}"
             )
+# ============================================================
+# INTEGRATION METHOD COMPARISON
+# ============================================================
+
+elif method == "Integration Method Comparison":
+
+    st.header("Integration Method Comparison")
+
+    st.write(
+        "Compare the numerical results and absolute errors "
+        "of three integration methods."
+    )
+
+    expression = st.text_input(
+        "Enter f(x):",
+        value="x**2"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        a = st.number_input(
+            "Lower limit (a)",
+            value=0.0,
+            key="comparison_a"
+        )
+
+    with col2:
+        b = st.number_input(
+            "Upper limit (b)",
+            value=1.0,
+            key="comparison_b"
+        )
+
+    n = st.number_input(
+        "Number of subintervals",
+        min_value=6,
+        max_value=10000,
+        value=12,
+        step=1,
+        key="comparison_integration_n"
+    )
+
+    n = int(n)
+
+    exact_value = st.number_input(
+        "Exact integral value",
+        value=0.3333333333,
+        format="%.10f"
+    )
+
+    if st.button(
+        "Compare Methods",
+        type="primary"
+    ):
+
+        try:
+
+            f = create_function(expression)
+
+            if n % 2 != 0:
+                raise ValueError(
+                    "n must be even for Simpson 1/3."
+                )
+
+            if n % 3 != 0:
+                raise ValueError(
+                    "n must be divisible by 3 for Simpson 3/8."
+                )
+
+            trapezoid_result = trapezoidal(
+                f, a, b, n
+            )
+
+            simpson_one_result = simpson_one_third(
+                f, a, b, n
+            )
+
+            simpson_three_result = simpson_three_eighth(
+                f, a, b, n
+            )
+
+            comparison = pd.DataFrame({
+                "Method": [
+                    "Trapezoidal",
+                    "Simpson 1/3",
+                    "Simpson 3/8"
+                ],
+                "Approximation": [
+                    trapezoid_result,
+                    simpson_one_result,
+                    simpson_three_result
+                ],
+                "Absolute Error": [
+                    abs(
+                        exact_value -
+                        trapezoid_result
+                    ),
+                    abs(
+                        exact_value -
+                        simpson_one_result
+                    ),
+                    abs(
+                        exact_value -
+                        simpson_three_result
+                    )
+                ]
+            })
+
+            st.success(
+                "Integration comparison completed successfully."
+            )
+
+            st.subheader("Comparison Results")
+
+            st.dataframe(
+                comparison,
+                use_container_width=True
+            )
+            st.download_button(
+    label="📥 Download Comparison CSV",
+    data=comparison.to_csv(index=False).encode("utf-8"),
+    file_name="integration_method_comparison.csv",
+    mime="text/csv"
+)
+            st.subheader("Absolute Error Comparison")
+
+            error_data = comparison.set_index("Method")[
+                      ["Absolute Error"]
+]
+
+            st.bar_chart(error_data)
+
+        except (
+            ValueError,
+            ZeroDivisionError,
+            TypeError,
+            NameError
+        ) as error:
+
+            st.error(f"Error: {error}")
  # ============================================================
 # ODE METHODS
 # ============================================================
@@ -1064,11 +1415,8 @@ elif method in [
     "Runge-Kutta 4 Method"
 ]:
 
-    st.header(method)
-
-    st.write(
-        "Solve the first-order differential equation:"
-    )
+    
+    
 
     st.latex(
         r"\frac{dy}{dx} = f(x,y)"
@@ -1087,19 +1435,22 @@ elif method in [
             "Initial x₀",
             value=0.0
         )
+    with col2:
 
         y0 = st.number_input(
             "Initial y₀",
             value=1.0
         )
+        col1, col2 = st.columns(2)
 
-    with col2:
+    with col1:
 
-        h = st.number_input(
-            "Step size (h)",
+        h = st.number_input(  "Step size (h)",
             value=0.1,
-            format="%.4f"
+            min_value=0.00000001,
+            format="%.8f"
         )
+    with col2:
 
         n = st.number_input(
             "Number of steps",
@@ -1108,6 +1459,7 @@ elif method in [
             value=10,
             step=1
         )
+        n = int(n)
 
     if st.button("Solve", type="primary"):
 
@@ -1122,7 +1474,7 @@ elif method in [
                     x0,
                     y0,
                     h,
-                    int(n)
+                    n
                 )
 
             elif method == "Heun Method":
@@ -1132,7 +1484,7 @@ elif method in [
                     x0,
                     y0,
                     h,
-                    int(n)
+                    n
                 )
 
             else:
@@ -1142,10 +1494,10 @@ elif method in [
                     x0,
                     y0,
                     h,
-                    int(n)
+                    n
                 )
 
-            st.success("ODE solved successfully.")
+            st.success(f" {method} ODE solved successfully.")
 
             st.subheader("Solution Table")
 
@@ -1153,15 +1505,176 @@ elif method in [
                 data,
                 use_container_width=True
             )
+            st.subheader("Final Approximation")
+            final_value = data[-1]
+            st.metric("Final x", f"{final_value['x']:.10f}")
 
-            if data:
+            
 
-                st.metric(
+            st.metric(
                     "Final y",
                     f"{data[-1]['y']:.10f}"
                 )
 
-        except Exception as error:
+        except (ValueError, ZeroDivisionError, TypeError, NameError) as error:
             st.error(
                 f"Error: {error}"
             )
+# ============================================================
+# ODE METHOD COMPARISON
+# ============================================================
+
+elif method == "ODE Method Comparison":
+
+    st.header("ODE Method Comparison")
+
+    st.write(
+        "Compare Euler, Heun and Runge-Kutta 4 "
+        "for the same initial value problem."
+    )
+
+    st.latex(r"\frac{dy}{dx}=f(x,y)")
+
+    expression = st.text_input(
+        "Enter f(x, y):",
+        value="x + y"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        x0 = st.number_input(
+            "Initial x₀",
+            value=0.0,
+            key="comparison_x0"
+        )
+
+    with col2:
+        y0 = st.number_input(
+            "Initial y₀",
+            value=1.0,
+            key="comparison_y0"
+        )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        h = st.number_input(
+            "Step size (h)",
+            value=0.1,
+            min_value=0.00000001,
+            format="%.8f",
+            key="comparison_h"
+        )
+
+    with col2:
+        n = st.number_input(
+            "Number of steps",
+            min_value=1,
+            max_value=10000,
+            value=10,
+            step=1,
+            key="comparison_n"
+        )
+
+    n = int(n)
+
+    if st.button(
+        "Compare Methods",
+        type="primary"
+    ):
+
+        try:
+
+            f = create_ode_function(expression)
+
+            euler_data = euler(
+                f, x0, y0, h, n
+            )
+
+            heun_data = heun(
+                f, x0, y0, h, n
+            )
+
+            rk4_data = rk4(
+                f, x0, y0, h, n
+            )
+
+            st.success(
+                "All three ODE methods solved successfully."
+            )
+
+            # --------------------------------------------
+            # Comparison table
+            # --------------------------------------------
+
+            comparison = pd.DataFrame({
+                "Method": [
+                    "Euler",
+                    "Heun",
+                    "RK4"
+                ],
+                "Final x": [
+                    euler_data[-1]["x"],
+                    heun_data[-1]["x"],
+                    rk4_data[-1]["x"]
+                ],
+                "Final y": [
+                    euler_data[-1]["y"],
+                    heun_data[-1]["y"],
+                    rk4_data[-1]["y"]
+                ]
+            })
+
+            st.subheader("Final Value Comparison")
+
+            st.dataframe(
+                comparison,
+                use_container_width=True
+            )
+            st.download_button(
+    label="📥 Download ODE Comparison CSV",
+    data=comparison.to_csv(index=False).encode("utf-8"),
+    file_name="ode_method_comparison.csv",
+    mime="text/csv"
+)
+
+            # --------------------------------------------
+            # Graph
+            # --------------------------------------------
+
+            graph_data = pd.DataFrame({
+                "x": [
+                    row["x"]
+                    for row in euler_data
+                ],
+                "Euler": [
+                    row["y"]
+                    for row in euler_data
+                ],
+                "Heun": [
+                    row["y"]
+                    for row in heun_data
+                ],
+                "RK4": [
+                    row["y"]
+                    for row in rk4_data
+                ]
+            })
+
+            st.title("Method Comparison Graph")
+
+            st.line_chart(
+                graph_data,
+                x="x",
+                y=["Euler", "Heun", "RK4"]
+            )
+
+        except (
+            ValueError,
+            ZeroDivisionError,
+            TypeError,
+            NameError
+        ) as error:
+
+            st.error(f"Error: {error}")

@@ -9,8 +9,9 @@ from src.ode import ( rk4, euler, heun)
 
 
 def test_bisection():
+    f = lambda x: x**3 - x - 2  
 
-    root, _ = bisection(1, 2)
+    root, _ = bisection(f,  1, 2)
 
     assert abs(root - 1.5213797) < 1e-5
 
@@ -98,17 +99,21 @@ def test_rk4():
 
     assert abs(numerical - exact) < 1e-4
 def test_newton_raphson():
-    root, _ = newton_raphson(1.5)
+    f = lambda x: x**3 - x - 2
+    df = lambda x: 3*x**2 - 1
+    root, _ = newton_raphson(f,  df,  1.5)
     assert abs(root - 1.5213797068) < 1e-5
 
 
 def test_secant():
-    root, _ = secant(1, 2)
+    f = lambda x: x**3 - x - 2
+    root, _ = secant(f,  1,  2)
     assert abs(root - 1.5213797068) < 1e-5
 
 
 def test_regula_falsi():
-    root, _ = regula_falsi(1, 2)
+    f = lambda x: x**3 - x - 2
+    root, _ = regula_falsi(f,  1, 2)
     assert abs(root - 1.5213797068) < 1e-5
 
 
